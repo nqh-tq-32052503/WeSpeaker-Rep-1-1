@@ -1,0 +1,1 @@
+git clone https://huggingface.co/nguyenhieu3205xt/WeSpeaker-Rep-1-1
