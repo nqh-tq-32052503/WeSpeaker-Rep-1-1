@@ -10,13 +10,15 @@ import yaml
 import os
 
 SUPPORTED_MODELS = ["campplus", "chinese", "english", "eres2net", "vblinkf", "vblinkp"]
-MAX_CHUNK_SIZE = 100
+MAX_CHUNK_SIZE = 200
+print("SUPPORTED_MODELS: ", SUPPORTED_MODELS)
 
 class Model(object):
-    def __init__(self, model_index, checkpoint_path, device="cuda"):
+    def __init__(self, model_index=1, device="cuda"):
         self.model_name = SUPPORTED_MODELS[model_index]
         self.device = device
         print("Model Name: ", self.model_name)
+        checkpoint_path = "./weights/" + self.model_name + ".pt"
         assert os.path.exists(checkpoint_path), "Checkpoint is not found"
         with open("./configs/" + self.model_name + ".yaml", "r") as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
@@ -69,6 +71,9 @@ class Model(object):
             list_embeddings[long_index] = long_embeddings[i]
         for i, short_index in enumerate(short_indices):
             list_embeddings[short_index] = short_embeddings[i]
+        
+        torch.cuda.empty_cache()
+        
         return list_embeddings
 
     def extract_embedding(self, input_fbanks):
