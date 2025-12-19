@@ -16,11 +16,19 @@ class EmbeddingClustering(object):
         }
     
     def cluster(self, list_embeddings):
+        umap_embeddings = self.execute_umap(list_embeddings)
+        list_labels = self.execute_hdbscan(umap_embeddings)
+        return list_labels
+
+    def execute_umap(self, list_embeddings):
         np_list_embeddings = [embedding.detach().cpu().numpy() for embedding in list_embeddings]
         umap_params = copy.deepcopy(self.umap_params)
         umap_params["n_components"] = min(32, len(np_list_embeddings) - 2)
         umap_obj = umap.UMAP(**umap_params)
         umap_embeddings = umap_obj.fit_transform(np.array(np_list_embeddings))
+        return umap_embeddings
+    
+    def execute_hdbscan(self, umap_embeddings):
         list_labels = self.clustering.fit_predict(umap_embeddings)
         return list_labels
     
