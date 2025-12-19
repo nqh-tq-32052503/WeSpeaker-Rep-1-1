@@ -1,14 +1,12 @@
 import torchaudio.compliance.kaldi as kaldi
 import torch
 from tqdm import tqdm
-from lhotse.features import Fbank, FbankConfig
 from torch.func import vmap
 
 STANDARD_SEGMENT_DURATION = 5
 SAMPLE_RATE = 16000
 STANDARD_SEGMENT_LENGTH = int(STANDARD_SEGMENT_DURATION * SAMPLE_RATE)
 VMAP_FBANK = vmap(lambda w: kaldi.fbank(w.unsqueeze(0), num_mel_bins=80, frame_length=25, frame_shift=10, sample_frequency=16000, window_type='hamming'))
-EXTRACTOR = Fbank(FbankConfig(sampling_rate=16000, num_mel_bins=80, device="cuda"))
 WINDOW_OFFSET = torch.arange(STANDARD_SEGMENT_LENGTH).unsqueeze(0).to("cuda")
 
 def handle_short_segment(short_segment: torch.Tensor):
@@ -39,14 +37,7 @@ def extract_fbank_using_kaldi(waveform, normalize=True):
         feat = feat - torch.mean(feat, 0)
     return feat
 
-def extract_fbank_using_lhotse(waveform):
-    fbank_np = EXTRACTOR.extract(samples=waveform, sampling_rate=16000)  # (T, F) np.float32
-    fbank_t = torch.from_numpy(fbank_np)
-    return fbank_t
 
 def extract_fbank(waveform, name="kaldi"):
-    if name == "kaldi":
-        feat = extract_fbank_using_kaldi(waveform)
-    else:
-        feat = extract_fbank_using_lhotse(waveform)
+    feat = extract_fbank_using_kaldi(waveform)
     return feat
